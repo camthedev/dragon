@@ -22,10 +22,15 @@ class player:
     def show_history(self):
         for item in self.history:
             print item
-        raw_input('Press enter to continue: ')
 
     def move_player(self, direction, spaces):
-        return None
+        if direction == "left":
+            self.x = self.x - 1
+        elif direction == "right":
+            self.x = self.x + 1
+        else:
+            print ("i can't move " + direction)
+
 
 
 
@@ -42,8 +47,12 @@ class grid:
         self.grid_contents[7] = "S"
 
     def get_grid_string(self, x, y):
+        self.clear_previous_location()
         self.grid_contents[x] = "&"
         return ''.join(self.grid_contents)
+
+    def clear_previous_location(self):
+        self.grid_contents = ["." if gl=="&" else gl for gl in self.grid_contents]
 
 
 
@@ -74,21 +83,56 @@ def print_status(p, g):
 
 
 def action_helper():
-    print "This program understands lots of commands:"
-    print ">>>>> examine, goto, help, history, inventory, move, eat, use"
+    print "Each command should have two parts."
+    print "An action you want to do, and a target you want to perform the action on"
+    print "Some things you can do: buy, examine, goto, inventory, move, eat, use"
+    print "Examples>>"
+    print "   move left"
+    print "   use map"
+    print "   buy sword"
+    print "   goto irontown"
     print ""
-    print "You could examine or use the hut and the river. Move quickly, you are getting hungry"
-    raw_input('Press enter to continue: ')
+    print "You can also use: help, history, or quit"
+    print ""
+    # print "You could examine or use the hut and the river. Move quickly, you are getting hungry"
 
 
 def input_action(p):
+    action = None
     print "What do you do? (type 'help' for assistance)"
     full_action = raw_input()
     p.add_to_history(full_action)
-    action = full_action.split()
+
+    if not " " in full_action:
+        if full_action == "help":
+            action_helper()
+        elif full_action == "history":
+            p.show_history()
+        elif full_action == "quit":
+            sys.exit(0)
+
+        raw_input('Press enter to continue: ')
+        return action
 
 
-    if action == "examine hut":
+    action_split = full_action.split()
+
+    if len(action_split) > 2:
+        print("Try stating that another way.")
+        action_helper()
+        raw_input('Press enter to continue: ')
+        return action
+    else:
+        action = action_split[0]
+        action_target = action_split[1]
+        print "action> " + action
+        print "target> " + action_target
+        print "==========="
+
+    if action == "move":
+        p.move_player(action_target, 1)
+
+    elif action == "examine hut":
         print "It's a fishing hut, with an old rod and some gold inside inside."
     elif action == "use hut":
       #  if not fishingrod:
@@ -107,13 +151,14 @@ def input_action(p):
         print "Not a good time to take a swim, bro"
     elif action == "help":
         action_helper()
+        raw_input('Press enter to continue: ')
     elif action == "history":
         p.show_history()
     elif action == "quit":
         sys.exit(0)
     else:
         print "i don't know how to " + action
-
+        raw_input('Press enter to continue: ')
     # time.sleep(1)
     return action
 
